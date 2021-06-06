@@ -27,7 +27,7 @@
   },
   "scripts": {
     "dev": "parcel src/index.html --open -p 3000",
-    "build": "parcel build src/index.html --dist-dir docs",
+    "build": "parcel build src/index.html --public-url /drawit-canvas/ --dist-dir docs",
     "test": "jest"
   },
   "dependencies": {
