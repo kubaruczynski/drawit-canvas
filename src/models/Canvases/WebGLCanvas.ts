@@ -8,27 +8,24 @@ import {Polyline} from "../Objects/Polyline";
 import {CanvasSettings} from "./CanvasSettings";
 
 export abstract class WebGLCanvas {
-  private enabled: boolean = true;
-  private canvasHolder: HTMLElement;
+  protected canvasHolder: HTMLElement;
   protected canvasNode: HTMLCanvasElement;
   protected canvasContext: WebGLRenderingContext;
   private sizeMultiplier: number;
   private vertexShader: WebGLShader;
   private fragmentShader: WebGLShader;
   private webGLProgram: WebGLProgram;
-  private primitiveType: GLenum;
-  private canvasSettings: CanvasSettings;
+  protected canvasSettings: CanvasSettings;
 
-  private mouse: Vec3 = new Vec3();
 
   private prev_positionBuffer;
   private next_positionBuffer;
   private positionBuffer;
   private sideBuffer;
-  private widthBuffer;
   private uvBuffer;
 
-  private polyline: Polyline;
+  protected polyline: Polyline;
+
 
   private createCanvas = (width: number, height: number) => {
     const canvas = document.createElement("canvas");
@@ -40,10 +37,12 @@ export abstract class WebGLCanvas {
   constructor(
     canvasHolder: HTMLElement,
     id: string,
+    settings: CanvasSettings,
     sizeMultiplier?: number,
     width?: number,
     height?: number
   ) {
+    this.canvasSettings = settings;
     this.sizeMultiplier = sizeMultiplier;
     this.canvasHolder = canvasHolder;
     const canvas = this.createCanvas(
@@ -92,7 +91,6 @@ export abstract class WebGLCanvas {
     const widthUniformLocation = this.canvasContext.getUniformLocation(this.webGLProgram, "width");
     this.canvasContext.uniform1f(widthUniformLocation, 0.01);
 
-    this.resizeHandle();
     this.canvasContext.viewport(0,0,this.canvasNode.width,this.canvasNode.height);
     this.canvasContext.clearColor(0,0,0,0);
     this.canvasContext.clear(this.canvasContext.COLOR_BUFFER_BIT | this.canvasContext.DEPTH_BUFFER_BIT);
@@ -106,7 +104,7 @@ export abstract class WebGLCanvas {
     const count = 20;
     const points: Vec3[] = [];
     for (let i = 0; i < count; i++) {
-      const x = i / (count - 1) - 0.5;
+      const x = 0;
       const y = 0;
       const z = 0;
       points.push(new Vec3(x,y,z));
@@ -139,46 +137,10 @@ export abstract class WebGLCanvas {
     this.canvasContext.vertexAttribPointer(uvAttributeLocation, 2, type, normalize, stride, offset);
     this.canvasContext.enableVertexAttribArray(uvAttributeLocation);
 
-    this.canvasContext.drawArrays(this.canvasContext.TRIANGLE_STRIP,0,40);
+    this.canvasContext.drawArrays(this.canvasContext.TRIANGLE_STRIP,0,1);
 
   };
 
-  drawCursor = (e) => {
-    const x = e.offsetX;
-    const y = e.offsetY;
-    this.mouse.x = (x/this.canvasNode.width)*2 -1;
-    this.mouse.y = (y/this.canvasNode.height)*-2+1;
-  };
-
-  private spring = 0.05;
-  private friction = 0.95;
-  private tmp = new Vec3();
-  private mouseVelocity: Vec3 = new Vec3();
-
-  draw() {
-    this.updateBuffersAndDraw();
-
-    for (let i = this.polyline.points.length - 1; i >= 0; i--) {
-      if (!i) {
-        this.tmp = this.mouse.copy();
-        this.tmp = this.tmp.sub(this.polyline.points[i]);
-        this.tmp = this.tmp.scale(this.spring);
-        this.mouseVelocity = this.mouseVelocity.add(this.tmp);
-        this.mouseVelocity = this.mouseVelocity.scale(this.friction);
-        this.polyline.points[i] = this.polyline.points[i].add(this.mouseVelocity);
-      } else {
-        this.polyline.points[i].lerp(this.polyline.points[i - 1], 0.6);
-      }
-    }
-
-    this.polyline.updateGeometry();
-
-    requestAnimationFrame(()=>this.draw());
-  }
-
-  updateSettings(settings: CanvasSettings){
-    this.canvasSettings = settings;
-  }
 
   updateBuffersAndDraw(){
 
@@ -206,17 +168,20 @@ export abstract class WebGLCanvas {
     this.canvasContext.drawArrays(this.canvasContext.TRIANGLE_STRIP,0,40);
   }
 
+
   resizeHandle = () => {
-      const displayWidth  = this.canvasNode.clientWidth;
-      const displayHeight = this.canvasNode.clientHeight;
+    const displayWidth  = this.canvasHolder.clientWidth;
+    const displayHeight = this.canvasHolder.clientHeight;
 
-      if (this.canvasNode.width  != displayWidth ||
-          this.canvasNode.height != displayHeight) {
+    if (this.canvasNode.width  != displayWidth ||
+        this.canvasNode.height != displayHeight) {
 
-        this.canvasNode.width  = displayWidth;
-        this.canvasNode.height = displayHeight;
-      }
+      this.canvasNode.width  = displayWidth;
+      this.canvasNode.height = displayHeight;
+    }
+    const resolutionUniformLocation  = this.canvasContext.getUniformLocation(this.webGLProgram, "u_resolution");
+    this.canvasContext.viewport(0,0,this.canvasNode.width,this.canvasNode.height);
+    this.canvasContext.uniform2f(resolutionUniformLocation,this.canvasNode.width,this.canvasNode.height);
 
   };
-
 }

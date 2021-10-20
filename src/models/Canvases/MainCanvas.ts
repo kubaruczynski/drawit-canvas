@@ -1,78 +1,47 @@
-import { Canvas } from "./Canvas";
-import {CanvasSettings} from "./CanvasSettings";
+import {CanvasSettingsBox} from "../Settings/CanvasSettingsBox";
 import {WebGLCanvas} from "./WebGLCanvas";
+import {CanvasSettings} from "./CanvasSettings";
+import {Vec3} from "../Vectors/Vec3";
+import {Polyline} from "../Objects/Polyline";
 
 export class MainCanvas extends WebGLCanvas {
-  private isDrawing: boolean = false;
-  private mouseX: number = 0;
-  private mouseY: number = 0;
-  private settings: CanvasSettings;
+  private mouse: Vec3 = new Vec3();
+  private tmp = new Vec3();
+  private mouseVelocity: Vec3 = new Vec3();
 
-  constructor(canvasHolder: HTMLElement,settings: CanvasSettings,sizeMultiplier?:number, width?: number, height?: number) {
-    super(canvasHolder,'main-canvas',sizeMultiplier, width, height);
-    this.settings = settings;
-    super.updateSettings(this.settings)
-    this.canvasNode.addEventListener("mousedown",this.startDrawing);
-    this.canvasNode.addEventListener("mouseup",this.stopDrawing);
-    this.canvasNode.addEventListener("mousemove",this.doDrawing);
+  constructor(canvasHolder: HTMLElement, settings: CanvasSettings, sizeMultiplier?:number, width?: number, height?: number) {
+    super(canvasHolder,'main-canvas',settings,sizeMultiplier, width, height);
+    canvasHolder.addEventListener("mousemove",this.drawCursor);
+    canvasHolder.addEventListener("touchmove",this.drawCursor);
+    this.draw()
+  }
 
-    this.canvasNode.addEventListener("touchstart",this.startDrawing);
-    this.canvasNode.addEventListener("touchend",this.stopDrawing);
-    this.canvasNode.addEventListener("touchmove",this.doDrawing);
+  private drawCursor = (e) => {
+    const x = e.clientX;
+    const y = e.clientY;
+    this.mouse.x = (x/this.canvasNode.width)*2 -1;
+    this.mouse.y = (y/this.canvasNode.height)*-2+1;
+  };
 
+
+  draw() {
+    this.updateBuffersAndDraw();
+    for (let i = this.polyline.points.length - 1; i >= 0; i--) {
+      if (!i) {
+        this.tmp = this.mouse.copy();
+        this.tmp = this.tmp.sub(this.polyline.points[i]);
+        this.tmp = this.tmp.scale(this.canvasSettings.spring);
+        this.mouseVelocity = this.mouseVelocity.add(this.tmp);
+        this.mouseVelocity = this.mouseVelocity.scale(this.canvasSettings.friction);
+        this.polyline.points[i] = this.polyline.points[i].add(this.mouseVelocity);
+      } else {
+        this.polyline.points[i].lerp(this.polyline.points[i - 1], this.canvasSettings.time);
+      }
+    }
+
+    this.polyline.updateGeometry();
 
     requestAnimationFrame(()=>this.draw());
   }
 
-  componentToHex(c) {
-    var hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
-  }
-
-  rgbToHex(r, g, b) {
-    return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
-  }
-
-  hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
-  }
-
-  startDrawing = (e: any) => {
-    this.isDrawing = true;
-    this.mouseX = e.offsetX;
-    this.mouseY = e.offsetY;
-    super.updateSettings(this.settings)
-  };
-
-  stopDrawing = () =>{
-    this.isDrawing = false;
-  };
-
-  doDrawing = (e: any) =>{
-        this.drawCursor(e);
-  };
-
-  /*draw = e => {
-    const x = e.offsetX;
-    const y = e.offsetY;
-    if (e.buttons !== 1) return;
-
-    this.canvasContext.beginPath(); // begin
-
-    this.canvasContext.lineWidth = this.settings.pencilWidth;
-    this.canvasContext.lineCap = "round";
-    this.canvasContext.strokeStyle = this.settings.currentColor;
-
-    this.canvasContext.moveTo(this.mouseX, this.mouseY); // from
-    this.canvasContext.lineTo(x, y); // to
-    this.mouseX = x;
-    this.mouseY = y;
-
-    this.canvasContext.stroke(); // draw it!
-  };*/
 }

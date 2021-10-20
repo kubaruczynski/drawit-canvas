@@ -1,26 +1,16 @@
 import { Canvas } from "./Canvas";
+import {RGBA} from "../Types/Rgba";
 
 export class ColorSelectionCanvas extends Canvas {
   private selectedColor: string = "rgba(255,0,0,1)";
   private drawingColor: string = "rgba(255,0,0,1)";
-  private selectedColorAsRGBAObject: {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-  } = { r: 255, g: 0, b: 0, a: 1 };
-  /*private selectedColorAsHSLAObject: {
-    h: number;
-    s: number;
-    l: number;
-    a: number;
-  };*/
+  private selectedColorAsRGBAObject: RGBA = { r: 255, g: 0, b: 0, a: 255 };
   private isDragging: boolean = false;
-  private onColorSelect: (color: string, rgb: {r:number,g:number,b:number, a: number}) => any;
+  private onColorSelect: (RGBA)=>void;
 
   constructor(
     canvasHolder: HTMLElement,
-    onColorSelect: (color: string, rgb: {r:number,g:number,b:number,a:number}) => any,
+    onColorSelect: (RGBA)=>void,
     width?: number,
     height?: number
   ) {
@@ -105,8 +95,9 @@ export class ColorSelectionCanvas extends Canvas {
     const rgbaDrawing = this.hslatorgba(hue,hsla.s,hsla.l,hsla.a);
     this.selectedColor = "rgba(" + rgbaSelected.r + "," + rgbaSelected.g + "," + rgbaSelected.b + "," + rgbaSelected.a + ")";
     this.drawingColor = "rgba(" + rgbaDrawing.r + "," + rgbaDrawing.g + "," + rgbaDrawing.b + "," + rgbaDrawing.a + ")";
+    console.log('%cIIIIIIIIIIIII', `background: ${this.selectedColor}; color: ${this.drawingColor}`);
     this.selectedColorAsRGBAObject = rgbaSelected;
-    this.onColorSelect(this.drawingColor, this.selectedColorAsRGBAObject);
+    this.onColorSelect(this.selectedColorAsRGBAObject);
     this.draw();
   };
 
@@ -117,12 +108,12 @@ export class ColorSelectionCanvas extends Canvas {
     this.drawingColor =
       "rgba(" + imageData[0] + "," + imageData[1] + "," + imageData[2] + ",1)";
     this.selectedColorAsRGBAObject = {
-      r: imageData[0]/255,
-      g: imageData[1]/255,
-      b: imageData[2]/255,
-      a: imageData[3]/255
+      r: imageData[0],
+      g: imageData[1],
+      b: imageData[2],
+      a: imageData[3]
     };
-    this.onColorSelect(this.drawingColor,this.selectedColorAsRGBAObject);
+    this.onColorSelect(this.selectedColorAsRGBAObject);
     this.draw();
   };
 

@@ -4,4 +4,5 @@ import './styles/index.css';
 
 const app = document.getElementById("app");
 
-new DrawitCanvas(app!);
+// @ts-ignore
+document.canvas = new DrawitCanvas(app!);

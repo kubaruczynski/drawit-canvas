@@ -1,5 +1,5 @@
-import { Canvas } from "./Canvas";
-import {CanvasSettings} from "./CanvasSettings";
+import { Canvas } from "../Settings/Canvas";
+import {CanvasSettingsBox} from "../Settings/CanvasSettingsBox";
 
 export class CanvasBackground extends Canvas {
   //private currentSetting: number;
