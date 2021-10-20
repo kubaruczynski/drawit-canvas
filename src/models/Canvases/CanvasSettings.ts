@@ -2,12 +2,14 @@ import { ColorSelectionCanvas } from "./ColorSelectionCanvas";
 import { HueSelectionCanvas } from "./HueSelectionCanvas";
 
 export class CanvasSettings {
-  currentColor: string = "rgba(255,0,0,1)";
+  currentColor: string = "#C3C3C3";
   pencilWidth: number = 15;
   private colorDisplay: HTMLElement;
   private colorPicker: ColorSelectionCanvas;
   private huePicker: HueSelectionCanvas;
   private sizePicker: HTMLElement;
+  colorInHex: string;
+  colorInRGB: {r:number,g:number,b:number,a:number};
 
   constructor(mainAppHolder: HTMLElement) {
     const settingsHolder = document.createElement("div");
@@ -27,7 +29,7 @@ export class CanvasSettings {
     const sizePicker = document.createElement("input");
     sizePicker.type = "range";
     sizePicker.min = "1";
-    sizePicker.max="50";
+    sizePicker.max="100";
     sizePicker.value = "15";
     sizePicker.oninput = this.changePencilSize;
     sizePicker.id = "pencil-size-picker";
@@ -44,24 +46,26 @@ export class CanvasSettings {
 
     this.colorPicker = new ColorSelectionCanvas(
       colorSelectionWrapper,
-      this.changeCurrentlySelectedColor
+      this.changeCurrentlySelectedColor,
     );
     this.huePicker = new HueSelectionCanvas(
       hueSelectionWrapper,
       this.colorPicker.setNewHue
     );
-    this.changeCurrentlySelectedColor("rgba(255,0,0,1)");
+    this.changeCurrentlySelectedColor("#000000",
+        {r:255,g:0,b:0,a:1});
     this.changePencilSize({target: {value: "15"}})
   }
 
-  changeCurrentlySelectedColor = (color: string) => {
+  changeCurrentlySelectedColor = (color: string, rgb: {r:number,g:number,b:number,a:number}) => {
     this.currentColor = color;
+    this.colorInRGB = rgb;
     this.colorDisplay.style.background = color;
   };
 
   //TODO: change this type to proper one
   changePencilSize = (size: any) => {
-    this.pencilWidth = Number(size.target.value);
+    this.pencilWidth = Number(size.target.value/1000);
     this.colorDisplay.style.width = this.pencilWidth + "px";
     this.colorDisplay.style.height = this.pencilWidth + "px";
   }

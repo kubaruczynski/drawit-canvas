@@ -5,6 +5,7 @@ attribute float side;
 attribute vec2 uv;
 
 uniform vec2 u_resolution;
+uniform float width;
 
 void main() {
     //ratio wyświetlania
@@ -20,7 +21,7 @@ void main() {
     normal /= aspect;
     //10% ekranu, bo o -1,1;
     //normal *= 0.1;
-    normal *= (1.0 - pow(abs(uv.y - 0.5) * 2.0, 2.0)) * 0.1;
+    normal *= (1.0 - pow(abs(uv.y - 0.5) * 2.0, 2.0)) * width;
     float dist = length(nextScreen - prevScreen);
     normal *= smoothstep(0.0, 0.05, dist);
 

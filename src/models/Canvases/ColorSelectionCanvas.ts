@@ -16,17 +16,17 @@ export class ColorSelectionCanvas extends Canvas {
     a: number;
   };*/
   private isDragging: boolean = false;
-  private onColorSelect: (color: string) => any;
+  private onColorSelect: (color: string, rgb: {r:number,g:number,b:number, a: number}) => any;
 
   constructor(
     canvasHolder: HTMLElement,
-    onColorSelect: (color: string) => any,
+    onColorSelect: (color: string, rgb: {r:number,g:number,b:number,a:number}) => any,
     width?: number,
     height?: number
   ) {
     super(canvasHolder,'color-selection-canvas',1, width, height);
     this.onColorSelect = onColorSelect;
-    this.canvasNode.addEventListener("click", this.changeColor);
+    this.canvasNode.addEventListener("click", e => this.changeColor(e));
     this.canvasNode.addEventListener("mousedown", e => {
       this.isDragging = true;
       this.changeColor(e);
@@ -105,8 +105,8 @@ export class ColorSelectionCanvas extends Canvas {
     const rgbaDrawing = this.hslatorgba(hue,hsla.s,hsla.l,hsla.a);
     this.selectedColor = "rgba(" + rgbaSelected.r + "," + rgbaSelected.g + "," + rgbaSelected.b + "," + rgbaSelected.a + ")";
     this.drawingColor = "rgba(" + rgbaDrawing.r + "," + rgbaDrawing.g + "," + rgbaDrawing.b + "," + rgbaDrawing.a + ")";
-    this.selectedColorAsRGBAObject = rgbaDrawing;
-    this.onColorSelect(this.drawingColor);
+    this.selectedColorAsRGBAObject = rgbaSelected;
+    this.onColorSelect(this.drawingColor, this.selectedColorAsRGBAObject);
     this.draw();
   };
 
@@ -117,12 +117,13 @@ export class ColorSelectionCanvas extends Canvas {
     this.drawingColor =
       "rgba(" + imageData[0] + "," + imageData[1] + "," + imageData[2] + ",1)";
     this.selectedColorAsRGBAObject = {
-      r: imageData[0],
-      g: imageData[1],
-      b: imageData[2],
-      a: imageData[3]
+      r: imageData[0]/255,
+      g: imageData[1]/255,
+      b: imageData[2]/255,
+      a: imageData[3]/255
     };
-    this.onColorSelect(this.drawingColor);
+    this.onColorSelect(this.drawingColor,this.selectedColorAsRGBAObject);
+    this.draw();
   };
 
   drawGradientsOnColorSelectionCanvas = () => {

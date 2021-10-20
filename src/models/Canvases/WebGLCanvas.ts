@@ -5,6 +5,7 @@ import frag from '../../shaders/frag.glsl';
 import {createProgram, createShader} from "../../shaders/shaderUtils";
 import {Vec3} from "../Vectors/Vec3";
 import {Polyline} from "../Objects/Polyline";
+import {CanvasSettings} from "./CanvasSettings";
 
 export abstract class WebGLCanvas {
   private enabled: boolean = true;
@@ -16,6 +17,7 @@ export abstract class WebGLCanvas {
   private fragmentShader: WebGLShader;
   private webGLProgram: WebGLProgram;
   private primitiveType: GLenum;
+  private canvasSettings: CanvasSettings;
 
   private mouse: Vec3 = new Vec3();
 
@@ -23,6 +25,7 @@ export abstract class WebGLCanvas {
   private next_positionBuffer;
   private positionBuffer;
   private sideBuffer;
+  private widthBuffer;
   private uvBuffer;
 
   private polyline: Polyline;
@@ -53,7 +56,7 @@ export abstract class WebGLCanvas {
     );
     canvas.id = id;
     this.canvasNode = canvasHolder.appendChild(canvas);
-    this.canvasContext = this.canvasNode.getContext("webgl");
+    this.canvasContext = this.canvasNode.getContext("webgl", {preserveDrawingBuffer:false});
     //this.primitiveType = this.canvasContext.TRIANGLES;
     //this.primitiveType = this.canvasContext.LINES;
     //this.primitiveType = this.canvasContext.TRIANGLE_STRIP;
@@ -84,6 +87,10 @@ export abstract class WebGLCanvas {
     //this.canvasContext.uniform4f(colorUniformLocation, 255, 0, 0, 1);
 
     const resolutionUniformLocation  = this.canvasContext.getUniformLocation(this.webGLProgram, "u_resolution");
+
+
+    const widthUniformLocation = this.canvasContext.getUniformLocation(this.webGLProgram, "width");
+    this.canvasContext.uniform1f(widthUniformLocation, 0.01);
 
     this.resizeHandle();
     this.canvasContext.viewport(0,0,this.canvasNode.width,this.canvasNode.height);
@@ -144,7 +151,7 @@ export abstract class WebGLCanvas {
   };
 
   private spring = 0.05;
-  private friction = 0.93;
+  private friction = 0.95;
   private tmp = new Vec3();
   private mouseVelocity: Vec3 = new Vec3();
 
@@ -160,7 +167,7 @@ export abstract class WebGLCanvas {
         this.mouseVelocity = this.mouseVelocity.scale(this.friction);
         this.polyline.points[i] = this.polyline.points[i].add(this.mouseVelocity);
       } else {
-        this.polyline.points[i].lerp(this.polyline.points[i - 1], 0.9);
+        this.polyline.points[i].lerp(this.polyline.points[i - 1], 0.6);
       }
     }
 
@@ -169,7 +176,18 @@ export abstract class WebGLCanvas {
     requestAnimationFrame(()=>this.draw());
   }
 
+  updateSettings(settings: CanvasSettings){
+    this.canvasSettings = settings;
+  }
+
   updateBuffersAndDraw(){
+
+    const widthUniformLocation = this.canvasContext.getUniformLocation(this.webGLProgram, "width");
+    this.canvasContext.uniform1f(widthUniformLocation, this.canvasSettings.pencilWidth);
+
+    const colorUniformLocation = this.canvasContext.getUniformLocation(this.webGLProgram, "u_color");
+    this.canvasContext.uniform4f(colorUniformLocation, this.canvasSettings.colorInRGB.r, this.canvasSettings.colorInRGB.g, this.canvasSettings.colorInRGB.b, this.canvasSettings.colorInRGB.a);
+
     this.canvasContext.bindBuffer(this.canvasContext.ARRAY_BUFFER,this.prev_positionBuffer);
     this.canvasContext.bufferData(this.canvasContext.ARRAY_BUFFER, this.polyline.prev, this.canvasContext.STATIC_DRAW);
 
