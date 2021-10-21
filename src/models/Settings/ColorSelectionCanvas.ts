@@ -95,7 +95,6 @@ export class ColorSelectionCanvas extends Canvas {
     const rgbaDrawing = this.hslatorgba(hue,hsla.s,hsla.l,hsla.a);
     this.selectedColor = "rgba(" + rgbaSelected.r + "," + rgbaSelected.g + "," + rgbaSelected.b + "," + rgbaSelected.a + ")";
     this.drawingColor = "rgba(" + rgbaDrawing.r + "," + rgbaDrawing.g + "," + rgbaDrawing.b + "," + rgbaDrawing.a + ")";
-    console.log('%cIIIIIIIIIIIII', `background: ${this.selectedColor}; color: ${this.drawingColor}`);
     this.selectedColorAsRGBAObject = rgbaSelected;
     this.onColorSelect(this.selectedColorAsRGBAObject);
     this.draw();
