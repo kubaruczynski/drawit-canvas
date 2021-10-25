@@ -17,7 +17,6 @@ export abstract class WebGLCanvas {
   private webGLProgram: WebGLProgram;
   protected canvasSettings: CanvasSettings;
 
-
   private prev_positionBuffer;
   private next_positionBuffer;
   private positionBuffer;
@@ -25,7 +24,6 @@ export abstract class WebGLCanvas {
   private uvBuffer;
 
   protected polyline: Polyline;
-
 
   private createCanvas = (width: number, height: number) => {
     const canvas = document.createElement("canvas");
@@ -56,9 +54,6 @@ export abstract class WebGLCanvas {
     canvas.id = id;
     this.canvasNode = canvasHolder.appendChild(canvas);
     this.canvasContext = this.canvasNode.getContext("webgl", {preserveDrawingBuffer:false});
-    //this.primitiveType = this.canvasContext.TRIANGLES;
-    //this.primitiveType = this.canvasContext.LINES;
-    //this.primitiveType = this.canvasContext.TRIANGLE_STRIP;
     this.webGLShadersInitialize();
   }
 
@@ -143,7 +138,6 @@ export abstract class WebGLCanvas {
 
 
   updateBuffersAndDraw(){
-
     const widthUniformLocation = this.canvasContext.getUniformLocation(this.webGLProgram, "width");
     this.canvasContext.uniform1f(widthUniformLocation, this.canvasSettings.pencilWidth);
 
@@ -165,6 +159,10 @@ export abstract class WebGLCanvas {
     this.canvasContext.bindBuffer(this.canvasContext.ARRAY_BUFFER,this.uvBuffer);
     this.canvasContext.bufferData(this.canvasContext.ARRAY_BUFFER, this.polyline.uv, this.canvasContext.STATIC_DRAW);
 
+    let error = this.canvasContext.getError();
+    if(error){
+      console.error(error)
+    }
     this.canvasContext.drawArrays(this.canvasContext.TRIANGLE_STRIP,0,40);
   }
 

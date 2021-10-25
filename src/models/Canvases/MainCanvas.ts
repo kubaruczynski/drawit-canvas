@@ -23,9 +23,7 @@ export class MainCanvas extends WebGLCanvas {
     this.mouse.y = (y/this.canvasNode.height)*-2+1;
   };
 
-
-  draw() {
-    this.updateBuffersAndDraw();
+  draw = () => {
     for (let i = this.polyline.points.length - 1; i >= 0; i--) {
       if (!i) {
         this.tmp = this.mouse.copy();
@@ -38,10 +36,8 @@ export class MainCanvas extends WebGLCanvas {
         this.polyline.points[i].lerp(this.polyline.points[i - 1], this.canvasSettings.time);
       }
     }
-
     this.polyline.updateGeometry();
-
-    requestAnimationFrame(()=>this.draw());
+    this.updateBuffersAndDraw();
+    requestAnimationFrame(this.draw);
   }
-
 }
